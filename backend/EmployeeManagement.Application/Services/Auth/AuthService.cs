@@ -1,9 +1,12 @@
 ﻿using EmployeeManagement.Application.Dtos.Auth;
 using EmployeeManagement.Domain.Entities;
+using EmployeeManagement.Shared.Config;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -14,15 +17,25 @@ namespace EmployeeManagement.Application.Service.Auth
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(UserManager<AppUser> userManager, IConfiguration configuration)
+        public AuthService(
+            UserManager<AppUser> userManager,
+            IConfiguration configuration,
+            ILogger<AuthService> logger)
         {
             _userManager = userManager;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto dto)
         {
+            using var span = Telemetry.ActivitySource.StartActivity("Register User");
+
+            _logger.LogInformation("Attempting to register user {Email}", dto.Email);
+            span?.SetTag("user.email", dto.Email);
+
             var user = new AppUser
             {
                 UserName = dto.Email,
@@ -32,7 +45,15 @@ namespace EmployeeManagement.Application.Service.Auth
             var result = await _userManager.CreateAsync(user, dto.Password);
 
             if (!result.Succeeded)
-                throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                span?.SetStatus(ActivityStatusCode.Error, "User creation failed");
+                span?.SetTag("identity.errors", errors);
+                _logger.LogWarning("Failed to register user {Email}: {Errors}", dto.Email, errors);
+                throw new Exception(errors);
+            }
+
+            _logger.LogInformation("User {Email} registered successfully", dto.Email);
 
             return new AuthResponseDto
             {
@@ -43,10 +64,21 @@ namespace EmployeeManagement.Application.Service.Auth
 
         public async Task<AuthResponseDto> LoginAsync(LoginRequestDto dto)
         {
+            using var span = Telemetry.ActivitySource.StartActivity("Login User");
+
+            _logger.LogInformation("User login attempt: {Email}", dto.Email);
+            span?.SetTag("user.email", dto.Email);
+
             var user = await _userManager.FindByEmailAsync(dto.Email);
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
+            {
+                span?.SetStatus(ActivityStatusCode.Error, "Invalid credentials");
+                _logger.LogWarning("Invalid login for user {Email}", dto.Email);
                 throw new Exception("Invalid credentials");
+            }
+
+            _logger.LogInformation("User {Email} logged in successfully", dto.Email);
 
             return new AuthResponseDto
             {
@@ -57,6 +89,8 @@ namespace EmployeeManagement.Application.Service.Auth
 
         private async Task<string> GenerateJwt(AppUser user)
         {
+            using var span = Telemetry.ActivitySource.StartActivity("Generate JWT");
+
             var roles = await _userManager.GetRolesAsync(user);
 
             var claims = new List<Claim>
@@ -82,9 +116,13 @@ namespace EmployeeManagement.Application.Service.Auth
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
+            span?.SetTag("user.id", user.Id);
+            span?.SetTag("user.roles", string.Join(",", roles));
+            span?.SetTag("jwt.length", tokenString.Length);
+
+            return tokenString;
+        }
     }
 }
-
