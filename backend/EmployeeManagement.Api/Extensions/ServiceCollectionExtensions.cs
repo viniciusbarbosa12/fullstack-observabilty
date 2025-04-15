@@ -9,6 +9,7 @@ using EmployeeManagement.Application.Services.Departments.Validators;
 using EmployeeManagement.Application.Services.Departments;
 using EmployeeManagement.Domain.Interfaces;
 using EmployeeManagement.Infrastructure.Repositories;
+using Serilog.Core;
 
 namespace EmployeeManagement.Api.Extensions
 {
@@ -31,6 +32,11 @@ namespace EmployeeManagement.Api.Extensions
             //Repositories
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+
+            var httpContextAccessor = new HttpContextAccessor();
+            services.AddSingleton<IHttpContextAccessor>(httpContextAccessor);
+            services.AddSingleton<ILogEventEnricher>(new HttpRequestEnricher(httpContextAccessor));
+
 
 
             return services;
