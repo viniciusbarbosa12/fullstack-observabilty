@@ -1,0 +1,153 @@
+{
+  "id": null,
+  "uid": "employee-observability-fixed",
+  "title": "Employee Management Observability (Fixed)",
+  "tags": ["observability", "backend", "metrics", "otel"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 3,
+  "refresh": "10s",
+  "templating": {
+    "list": [
+      {
+        "name": "traceId",
+        "type": "textbox",
+        "label": "Trace ID",
+        "hide": 0,
+        "current": {
+          "text": "",
+          "value": ""
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Total DB Queries",
+      "id": 1,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "expr": "sum(employeemanagementapi_metrics_db_query_duration_ms_count)",
+          "format": "time_series",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "type": "timeSeries",
+      "title": "DB Query Duration (avg in ms)",
+      "id": 2,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "expr": "rate(employeemanagementapi_metrics_db_query_duration_ms_sum[1m]) / rate(employeemanagementapi_metrics_db_query_duration_ms_count[1m])",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      }
+    },
+    {
+      "type": "timeSeries",
+      "title": "API Requests by Endpoint",
+      "id": 3,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "expr": "sum by (endpoint, method) (rate(employeemanagementapi_metrics_api_requests_total[1m]))",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      }
+    },
+    {
+      "type": "timeSeries",
+      "title": "API Duration by Endpoint",
+      "id": 4,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "expr": "rate(employeemanagementapi_metrics_api_request_duration_ms_sum[1m]) / rate(employeemanagementapi_metrics_api_request_duration_ms_count[1m])",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      }
+    },
+    {
+      "type": "logs",
+      "title": "Logs (filter by traceId)",
+      "id": 5,
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "expr": "{app=\"EmployeeManagementApi\"} |= \"${traceId}\"",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      }
+    },
+    {
+      "type": "trace",
+      "title": "Traces - Last 1h",
+      "id": 6,
+      "datasource": {
+        "type": "tempo",
+        "uid": "P214B5B846CF3925F"
+      },
+      "targets": [
+        {
+          "query": "{service.name=\"EmployeeManagementApi\"}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      }
+    }
+  ]
+}

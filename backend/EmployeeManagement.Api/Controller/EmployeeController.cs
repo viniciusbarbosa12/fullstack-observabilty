@@ -3,7 +3,6 @@ using EmployeeManagement.Application.Service.Employees;
 using EmployeeManagement.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Prometheus;
 
 namespace EmployeeManagement.Api.Controller
 {
@@ -13,9 +12,6 @@ namespace EmployeeManagement.Api.Controller
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _employeeService;
-        private static readonly Counter _employeeCreated
-            = Metrics.CreateCounter("employee_created_total", "Number of created employees");
-
         private readonly ILogger<EmployeeController> _logger;
 
         public EmployeeController(IEmployeeService employeeService, ILogger<EmployeeController> logger)
@@ -27,17 +23,24 @@ namespace EmployeeManagement.Api.Controller
         [HttpGet]
         public async Task<ActionResult<List<EmployeeDto>>> GetAll()
         {
-            _logger.LogInformation("Fetching all employees at {Time}", DateTime.UtcNow);
-            return Ok(await _employeeService.GetAllAsync());
+            _logger.LogInformation("Fetching employees {Time} ", DateTime.UtcNow);
+
+
+            var result = await _employeeService.GetAllAsync();
+
+            return Ok(result);
         }
 
         [HttpPost("paged")]
         public async Task<ActionResult<PaginatedResult<EmployeeDto>>> GetPaged([FromBody] EmployeePagedQuery query)
         {
-            _logger.LogInformation("Fetching all employees paged at {Time}", DateTime.UtcNow);
+            _logger.LogInformation("Fetching employees {Time} {query}", DateTime.UtcNow, query);
 
-            return Ok(await _employeeService.GetPagedAsync(query));
+            var result = await _employeeService.GetPagedAsync(query);
+
+            return Ok(result);
         }
+
 
 
         [HttpGet("{id}")]
@@ -56,7 +59,7 @@ namespace EmployeeManagement.Api.Controller
             _logger.LogInformation("Creating employee {dto} - at {Time}", dto, DateTime.UtcNow);
 
             var created = await _employeeService.CreateAsync(dto);
-            _employeeCreated.Inc();
+
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 

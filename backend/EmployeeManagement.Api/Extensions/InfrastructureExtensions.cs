@@ -1,11 +1,9 @@
-﻿using EmployeeManagement.Domain.Entities;
-using EmployeeManagement.Domain.Interfaces;
+﻿using EmployeeManagement.Api.Metrics;
+using EmployeeManagement.Domain.Entities;
 using EmployeeManagement.Infrastructure.Context;
-using EmployeeManagement.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
@@ -16,15 +14,23 @@ namespace EmployeeManagement.Api.Extensions
     {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddScoped<MetricsDbCommandInterceptor>();
+
+            services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+            {
+                var interceptor = serviceProvider.GetRequiredService<MetricsDbCommandInterceptor>();
+
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
-                    sqlOptions => sqlOptions.EnableRetryOnFailure())
+                            sqlOptions => sqlOptions.EnableRetryOnFailure())
                        .EnableSensitiveDataLogging()
+                       .AddInterceptors(interceptor)
                        .LogTo(msg =>
                        {
                            Console.WriteLine(msg);
                            Log.Information("[EFCore] {Message}", msg);
-                       }, LogLevel.Information));
+                       }, LogLevel.Information);
+            });
+
 
 
             services.AddIdentity<AppUser, IdentityRole>()

@@ -16,18 +16,25 @@ namespace EmployeeManagement.Api.Extensions
                         new KeyValuePair<string, object>("environment", "dev"),
                         new KeyValuePair<string, object>("team", "backend")
                     }))
-                .WithTracing(tracing => tracing
-                    .AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddSqlClientInstrumentation()
-                    .AddJaegerExporter(o =>
-                    {
-                        o.AgentHost = "jaeger";
-                        o.AgentPort = 6831;
-                    }))
-                .WithMetrics(metrics => metrics
-                    .AddRuntimeInstrumentation()
-                    .AddAspNetCoreInstrumentation());
+                .WithMetrics(metrics =>
+                {
+                    metrics
+                        .AddRuntimeInstrumentation()
+                        .AddAspNetCoreInstrumentation()
+                        .AddMeter("EmployeeManagementApi.Metrics")
+                        .AddPrometheusExporter();
+                })
+                .WithTracing(tracing =>
+                {
+                    tracing
+                        .AddAspNetCoreInstrumentation()
+                        .AddHttpClientInstrumentation()
+                        .AddSqlClientInstrumentation()
+                        .AddOtlpExporter(opt =>
+                        {
+                            opt.Endpoint = new Uri("http://tempo:4317");
+                        });
+                });
 
             return services;
         }

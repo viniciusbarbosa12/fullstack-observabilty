@@ -1,0 +1,86 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "dotnet-observability",
+    "title": "ASP.NET Core Observability (DB & Request Metrics)",
+    "timezone": "browser",
+    "schemaVersion": 30,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "\ud83d\udd01 DB Query Duration (avg)",
+        "targets": [
+          {
+            "expr": "avg(db_query_duration_ms) by (endpoint)",
+            "legendFormat": "{{endpoint}}",
+            "refId": "A"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "type": "graph",
+        "title": "\u26a1 DB Latency p95 (Histogram)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(db_query_duration_ms_bucket[5m])) by (le, endpoint))",
+            "legendFormat": "{{endpoint}}",
+            "refId": "A"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "type": "graph",
+        "title": "\ud83d\udcc8 Query Count per Request",
+        "targets": [
+          {
+            "expr": "rate(db_query_count_total[1m])",
+            "legendFormat": "{{endpoint}}",
+            "refId": "A"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": {
+          "x": 0,
+          "y": 8,
+          "w": 12,
+          "h": 8
+        }
+      },
+      {
+        "type": "graph",
+        "title": "\ud83e\udde0 .NET Private Memory Usage",
+        "targets": [
+          {
+            "expr": "process_private_memory_bytes",
+            "legendFormat": "Memory",
+            "refId": "A"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": {
+          "x": 12,
+          "y": 8,
+          "w": 12,
+          "h": 8
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}

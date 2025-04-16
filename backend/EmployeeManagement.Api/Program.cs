@@ -1,33 +1,37 @@
-using EmployeeManagement.Api.Extensions;
-using EmployeeManagement.Api.Middlewares;
+﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Prometheus;
 using Serilog;
+using Serilog.Sinks.Grafana.Loki;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using CorrelationId.DependencyInjection;
-using Serilog.Formatting.Compact;
-using Serilog.Enrichers.Span;
-using Serilog.Core;
+
+using EmployeeManagement.Api.Diagnostics;
+using EmployeeManagement.Api.Extensions;
+using EmployeeManagement.Api.Middlewares;
+using EmployeeManagement.Api.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var serviceProvider = builder.Services.BuildServiceProvider();
-var enricher = serviceProvider.GetRequiredService<ILogEventEnricher>();
-Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .Enrich.WithProperty("Application", "EmployeeAPI")
-    .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
-    .Enrich.WithCorrelationId()
-    .Enrich.With(enricher) 
-    .WriteTo.Console(new RenderedCompactJsonFormatter())
-    .WriteTo.File("Logs/log.txt", rollingInterval: RollingInterval.Day)
-    .WriteTo.Seq("http://seq:80")
-    .CreateLogger();
+#region Logging (Serilog + Loki)
+
+builder.Host.UseSerilog((context, config) =>
+{
+    config
+        .MinimumLevel.Debug()
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("app", "EmployeeManagementApi")
+        .Enrich.WithProperty("env", "dev")
+        .WriteTo.Console()
+        .WriteTo.GrafanaLoki("http://loki:3100");
+});
+
+#endregion
 
 
-builder.Host.UseSerilog();
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddCorrelationId();
+#region Infrastructure & Application Services
 
-#region Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -37,30 +41,68 @@ builder.Services
     .AddSwaggerDocs()
     .AddAuthorizationPolicies()
     .AddOpenTelemetryServices()
-    .AddAuthorizationCors(); 
+    .AddAuthorizationCors();
+
+builder.Services.AddCorrelationId();
+
 #endregion
 
 var app = builder.Build();
 
+#region Observability - EF Core Metrics via Diagnostic Listener
 
-#region Middleware Prometheus & Serilog
-app.UseMetricServer();     
-app.UseHttpMetrics();
+var observer = new EfQueryObserver(
+    onQueryExecuted: ticks =>
+    {
+        var durationMs = TimeSpan.FromTicks(ticks).TotalMilliseconds;
+        EfCoreMetrics.DbQueryDuration.Record(durationMs);
+    },
+    onQueryCounted: () =>
+    {
+        EfCoreMetrics.IncrementQueryCount();
+    });
+
+DiagnosticListener.AllListeners.Subscribe(observer);
+
+#endregion
+
+#region Middleware - Observability First
+
+//  Prometheus - base metrics and HTTP metrics
+app.UseMetricServer();                                // Exposes /metrics
+app.UseHttpMetrics();                                 // Collects default HTTP metrics
+
+//  Custom dynamic metrics (Controller performance tracking)
+app.UseMiddleware<MetricsMiddleware>();
+
+//  Serilog structured logging for each request
 app.UseSerilogRequestLogging();
+
+//  Enrich logs with traceId (used by Grafana Loki)
+app.UseMiddleware<TraceIdLoggingMiddleware>();
+
+//  Structured log with request/response details
 app.UseMiddleware<RequestLoggingMiddleware>();
 
-#endregion
-
-#region Database Migration & Seed with Retry
-await app.UseRetryDatabaseConnectionAsync();
-#endregion
-
-#region Middleware
-app.UseCors("AllowFrontend");
-app.UseMiddleware<CorrelationId.CorrelationIdMiddleware>();
+//  EF Core metrics for query performance
 app.UseMiddleware<QueryTimingMiddleware>();
 
-app.UseSwagger();              
+//  Prometheus OTEL endpoint (internal exporter)
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
+//  CorrelationId support across services
+app.UseMiddleware<CorrelationIdMiddleware>();
+
+//  Global error handling - should be one of the last
+app.UseGlobalExceptionHandler();
+
+#endregion
+
+#region Middleware - General
+
+app.UseCors("AllowFrontend");
+
+app.UseSwagger();
 app.UseSwaggerUI();
 
 if (!app.Environment.IsDevelopment())
@@ -70,10 +112,20 @@ if (!app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseGlobalExceptionHandler();
+
 #endregion
 
+#region Database - Migrations & Retry
+
+await app.UseRetryDatabaseConnectionAsync();
+
+#endregion
+
+#region Endpoint Mapping
+
 app.MapControllers();
+
+#endregion
 
 app.Run();
 
