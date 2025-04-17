@@ -70,6 +70,7 @@ services:
       - observability
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-traces-panel
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
@@ -89,7 +90,7 @@ services:
       - observability
 
   tempo:
-    image: grafana/tempo:latest
+    image: grafana/tempo:2.3.1
     container_name: tempo
     ports:
       - "3200:3200"

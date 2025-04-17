@@ -5,7 +5,7 @@
   "tags": ["observability", "backend", "metrics", "otel"],
   "timezone": "browser",
   "schemaVersion": 36,
-  "version": 3,
+  "version": 4,
   "refresh": "10s",
   "templating": {
     "list": [
@@ -37,12 +37,7 @@
           "refId": "A"
         }
       ],
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 0
-      }
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 }
     },
     {
       "type": "timeseries",
@@ -58,12 +53,7 @@
           "refId": "A"
         }
       ],
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 4
-      }
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 }
     },
     {
       "type": "barchart",
@@ -79,12 +69,7 @@
           "refId": "A"
         }
       ],
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 4
-      }
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 }
     },
     {
       "type": "barchart",
@@ -100,12 +85,7 @@
           "refId": "A"
         }
       ],
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 12
-      }
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 }
     },
     {
       "type": "logs",
@@ -121,12 +101,7 @@
           "refId": "A"
         }
       ],
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 20
-      }
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 20 }
     },
     {
       "type": "trace",
@@ -138,16 +113,43 @@
       },
       "targets": [
         {
-          "query": "{service.name=\"EmployeeManagementApi\"}",
+          "query": "{resource.service.name=\"EmployeeManagementApi\"}",
           "refId": "A"
         }
       ],
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 30
-      }
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 30 }
+    },
+    {
+      "type": "barchart",
+      "title": "Errors 5xx por Endpoint",
+      "id": 7,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "targets": [
+        {
+          "expr": "sum by (endpoint, method) (rate(employeemanagementapi_metrics_api_requests_total{status=~\"5..\"}[1m]))",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 40 }
+    },
+    {
+      "type": "trace",
+      "title": "Top Slow Requests (> 300ms)",
+      "id": 8,
+      "datasource": {
+        "type": "tempo",
+        "uid": "P214B5B846CF3925F"
+      },
+      "targets": [
+        {
+          "query": "{resource.service.name=\"EmployeeManagementApi\"} | trace.duration > 300ms",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 46 }
     }
   ]
 }
