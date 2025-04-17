@@ -24,15 +24,16 @@ namespace EmployeeManagement.Api.Extensions
                         .AddMeter("EmployeeManagementApi.Metrics")
                         .AddPrometheusExporter();
                 })
-                .WithTracing(tracing =>
+                .WithTracing(tracer =>
                 {
-                    tracing
+                    tracer
                         .AddAspNetCoreInstrumentation()
                         .AddHttpClientInstrumentation()
                         .AddSqlClientInstrumentation()
-                        .AddOtlpExporter(opt =>
+                        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("EmployeeManagementApi"))
+                        .AddOtlpExporter(o =>
                         {
-                            opt.Endpoint = new Uri("http://tempo:4317");
+                            o.Endpoint = new Uri("http://tempo:4317");
                         });
                 });
 

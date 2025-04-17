@@ -18,10 +18,10 @@ services:
       - sqlserver
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:7000
+      - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=EmployeeDb;User Id=sa;Password=Admin123!;Encrypt=True;TrustServerCertificate=True
     ports:
-      - "7000:7000"
+      - "5000:5000"
     networks:
       - app-network
       - observability
@@ -84,6 +84,7 @@ services:
     command: -config.file=/etc/loki/loki-config.yaml
     volumes:
       - ./loki/loki-config.yaml:/etc/loki/loki-config.yaml
+      - ./loki/storage:/tmp/loki
     networks:
       - observability
 
@@ -107,5 +108,3 @@ networks:
 
 volumes:
   grafana-data:
-  loki-data:
-  tempo-data:

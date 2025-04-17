@@ -3,6 +3,7 @@ using EmployeeManagement.Application.Service.Employees;
 using EmployeeManagement.Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace EmployeeManagement.Api.Controller
 {
@@ -23,6 +24,10 @@ namespace EmployeeManagement.Api.Controller
         [HttpGet]
         public async Task<ActionResult<List<EmployeeDto>>> GetAll()
         {
+            Log.ForContext("app", "EmployeeManagementApi")
+   .ForContext("traceId", "manual-test")
+   .Information("🔥 Log direto pro Loki");
+
             _logger.LogInformation("Fetching employees {Time} ", DateTime.UtcNow);
 
 

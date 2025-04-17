@@ -1,10 +1,7 @@
 ﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Prometheus;
 using Serilog;
 using Serilog.Sinks.Grafana.Loki;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
 using CorrelationId.DependencyInjection;
 
 using EmployeeManagement.Api.Diagnostics;
@@ -15,17 +12,23 @@ using EmployeeManagement.Api.Metrics;
 var builder = WebApplication.CreateBuilder(args);
 
 #region Logging (Serilog + Loki)
-
-builder.Host.UseSerilog((context, config) =>
+Serilog.Debugging.SelfLog.Enable(Console.Error);
+builder.Host.UseSerilog((context, services, configuration) =>
 {
-    config
-        .MinimumLevel.Debug()
+    configuration
         .Enrich.FromLogContext()
-        .Enrich.WithProperty("app", "EmployeeManagementApi")
-        .Enrich.WithProperty("env", "dev")
+        .Enrich.WithEnvironmentName()
+        .Enrich.WithMachineName()
+        .Enrich.WithThreadId()
+        .Enrich.WithProcessId()
         .WriteTo.Console()
-        .WriteTo.GrafanaLoki("http://loki:3100");
+        .WriteTo.GrafanaLoki("http://loki:3100", labels: new[]
+        {
+            new LokiLabel { Key = "app", Value = "EmployeeManagementApi" },
+            new LokiLabel { Key = "env", Value = "dev" }
+        });
 });
+Log.Logger.Information("🔥 Teste direto com Serilog - deve aparecer no Loki!");
 
 #endregion
 
