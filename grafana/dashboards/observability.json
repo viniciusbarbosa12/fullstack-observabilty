@@ -2,7 +2,12 @@
   "id": null,
   "uid": "employee-observability-fixed",
   "title": "Employee Management Observability (Fixed)",
-  "tags": ["observability", "backend", "metrics", "otel"],
+  "tags": [
+    "observability",
+    "backend",
+    "metrics",
+    "otel"
+  ],
   "timezone": "browser",
   "schemaVersion": 36,
   "version": 4,
@@ -175,31 +180,6 @@
         "w": 24,
         "x": 0,
         "y": 30
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "options": {
-        "showHeader": true,
-        "columns": [
-          {
-            "text": "traceID",
-            "field": "traceID"
-          },
-          {
-            "text": "duration",
-            "field": "duration"
-          },
-          {
-            "text": "name",
-            "field": "name"
-          },
-          {
-            "text": "service",
-            "field": "resource.service.name"
-          }
-        ]
       }
     },
     {
@@ -242,27 +222,6 @@
         "w": 24,
         "x": 0,
         "y": 46
-      },
-      "options": {
-        "showHeader": true,
-        "columns": [
-          {
-            "text": "traceID",
-            "field": "traceID"
-          },
-          {
-            "text": "duration",
-            "field": "duration"
-          },
-          {
-            "text": "name",
-            "field": "name"
-          },
-          {
-            "text": "status.code",
-            "field": "status.code"
-          }
-        ]
       }
     }
   ]
