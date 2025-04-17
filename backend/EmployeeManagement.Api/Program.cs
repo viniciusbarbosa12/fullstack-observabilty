@@ -28,7 +28,6 @@ builder.Host.UseSerilog((context, services, configuration) =>
             new LokiLabel { Key = "env", Value = "dev" }
         });
 });
-Log.Logger.Information("🔥 Teste direto com Serilog - deve aparecer no Loki!");
 
 #endregion
 

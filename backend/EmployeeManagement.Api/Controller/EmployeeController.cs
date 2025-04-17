@@ -24,10 +24,6 @@ namespace EmployeeManagement.Api.Controller
         [HttpGet]
         public async Task<ActionResult<List<EmployeeDto>>> GetAll()
         {
-            Log.ForContext("app", "EmployeeManagementApi")
-   .ForContext("traceId", "manual-test")
-   .Information("🔥 Log direto pro Loki");
-
             _logger.LogInformation("Fetching employees {Time} ", DateTime.UtcNow);
 
 
