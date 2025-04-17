@@ -2,7 +2,7 @@ global:
   smtp_smarthost: "smtp.gmail.com:587"
   smtp_from: "dev.viniciusbarbosa@gmail.com"
   smtp_auth_username: "dev.viniciusbarbosa@gmail.com"
-  smtp_auth_password: "your-password-key"
+  smtp_auth_password: "pnssbrfjgffvnxot"
   smtp_require_tls: true
 
 route:

@@ -31,5 +31,7 @@ frontend/dist/
 
 nginx/html/
 
+loki/storage/chunks/
+
 *.tmp
 *.temp
