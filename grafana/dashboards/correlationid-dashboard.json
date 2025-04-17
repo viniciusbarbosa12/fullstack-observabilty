@@ -5,7 +5,7 @@
   "tags": ["correlationId", "observability", "logs", "traces"],
   "timezone": "browser",
   "schemaVersion": 36,
-  "version": 1,
+  "version": 2,
   "refresh": "10s",
   "templating": {
     "list": [
@@ -53,7 +53,7 @@
       },
       "targets": [
         {
-          "query": "{service.name=\"EmployeeManagementApi\"} |= \"${correlationId}\"",
+          "query": "{resource.service.name=\"EmployeeManagementApi\"} | span[\"correlationId\" = \"${correlationId}\"]",
           "refId": "A"
         }
       ],
