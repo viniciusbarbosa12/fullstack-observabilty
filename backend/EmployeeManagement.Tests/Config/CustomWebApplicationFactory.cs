@@ -19,19 +19,16 @@ namespace EmployeeManagement.Tests.Config
                     services.Remove(descriptor);
 
                 services.AddDbContext<ApplicationDbContext>(options =>
-                    options.UseSqlServer("Server=localhost;Database=EmployeeManagementDbTests;Trusted_Connection=True;Encrypt=False;"));
+                    options.UseInMemoryDatabase("TestDb"));
 
+                // Build e seeding
                 using var scope = services.BuildServiceProvider().CreateScope();
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                
-                db.Database.EnsureCreated();
                 db.Database.EnsureDeleted();
-                db.Database.Migrate();
-
+                db.Database.EnsureCreated();
 
                 DbInitializer.SeedAsync(scope.ServiceProvider).GetAwaiter().GetResult();
-
             });
         }
 
@@ -42,7 +39,7 @@ namespace EmployeeManagement.Tests.Config
             using var scope = Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             db.Database.EnsureDeleted();
-            db.Database.Migrate();
+            db.Database.EnsureCreated();
         }
     }
 }

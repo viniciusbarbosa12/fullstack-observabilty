@@ -1,0 +1,15 @@
+global:
+  smtp_smarthost: "smtp.email.com:587"
+  smtp_from: "email@email.com"
+  smtp_auth_username: "email@email.com"
+  smtp_auth_password: "smtp_auth_password"
+  smtp_require_tls: true
+
+route:
+  receiver: "email-notifications"
+
+receivers:
+  - name: "email-notifications"
+    email_configs:
+      - to: "dev.viniciusbarbosa@email.com"
+        send_resolved: true

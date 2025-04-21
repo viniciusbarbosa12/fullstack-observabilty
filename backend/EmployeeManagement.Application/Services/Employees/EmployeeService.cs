@@ -4,9 +4,11 @@ using EmployeeManagement.Domain.Entities;
 using EmployeeManagement.Domain.Exceptions;
 using EmployeeManagement.Domain.Interfaces;
 using EmployeeManagement.Domain.Models;
+using EmployeeManagement.Shared.Config;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace EmployeeManagement.Application.Services.Employees
 {
@@ -31,6 +33,8 @@ namespace EmployeeManagement.Application.Services.Employees
 
         public async Task<EmployeeDto> CreateAsync(CreateEmployeeDto dto)
         {
+            using var activity = Telemetry.ActivitySource.StartActivity("Create Employee");
+
             _logger.LogInformation("Starting employee creation...");
 
             await EnsureValidAsync(_createValidator, dto);
@@ -48,14 +52,18 @@ namespace EmployeeManagement.Application.Services.Employees
             await _repository.CreateAsync(employee);
             await _repository.SaveChangesAsync();
 
-            _logger.LogInformation("Employee {Id} created", employee.Id);
+            activity?.SetTag("employee.id", employee.Id.ToString());
+
+            _logger.LogInformation("Employee {EmployeeId} created successfully.", employee.Id);
 
             return ToDto(employee);
         }
 
         public async Task<EmployeeDto> UpdateAsync(Guid id, UpdateEmployeeDto dto)
         {
-            _logger.LogInformation("Starting update for employee {Id}", id);
+            using var activity = Telemetry.ActivitySource.StartActivity("Update Employee");
+
+            _logger.LogInformation("Starting update for employee {EmployeeId}", id);
 
             var employee = await _repository.GetByIdAsync(id)
                 ?? throw new NotFoundException($"Employee with ID {id} not found.");
@@ -72,23 +80,31 @@ namespace EmployeeManagement.Application.Services.Employees
             _repository.Update(employee);
             await _repository.SaveChangesAsync();
 
-            _logger.LogInformation("Employee {Id} updated", employee.Id);
+            activity?.SetTag("employee.id", employee.Id.ToString());
+
+            _logger.LogInformation("Employee {EmployeeId} updated successfully.", employee.Id);
 
             return ToDto(employee);
         }
 
         public async Task<EmployeeDto> GetByIdAsync(Guid id)
         {
-            _logger.LogInformation("Fetching employee {Id}", id);
-            var employee = await _repository.GetByIdAsync(id);
-            if (employee == null)
-                throw new NotFoundException($"Employee with ID {id} not found.");
+            using var activity = Telemetry.ActivitySource.StartActivity("Get Employee by ID");
+
+            _logger.LogInformation("Fetching employee {EmployeeId}", id);
+
+            var employee = await _repository.GetByIdAsync(id)
+                ?? throw new NotFoundException($"Employee with ID {id} not found.");
+
+            activity?.SetTag("employee.id", id.ToString());
 
             return ToDto(employee);
         }
 
         public async Task<List<EmployeeDto>> GetAllAsync()
         {
+            using var activity = Telemetry.ActivitySource.StartActivity("Get All Employees");
+
             _logger.LogInformation("Fetching all employees...");
 
             var employees = await _repository
@@ -96,12 +112,16 @@ namespace EmployeeManagement.Application.Services.Employees
                 .Include(e => e.Department)
                 .ToListAsync();
 
+            activity?.SetTag("employee.count", employees.Count);
+
             return employees.Select(ToDto).ToList();
         }
 
         public async Task<PaginatedResult<EmployeeDto>> GetPagedAsync(EmployeePagedQuery query)
         {
-            _logger.LogInformation("Fetching paged employee list...");
+            using var activity = Telemetry.ActivitySource.StartActivity("Get Paged Employees");
+
+            _logger.LogInformation("Fetching paginated employee list...");
 
             var result = await _repository.GetAllPagedAsync<EmployeeFilter>(query, (dbQuery, filter) =>
             {
@@ -118,6 +138,10 @@ namespace EmployeeManagement.Application.Services.Employees
                 return dbQuery.Include(e => e.Department);
             });
 
+            activity?.SetTag("page", result.Page);
+            activity?.SetTag("pageSize", result.PageSize);
+            activity?.SetTag("totalItems", result.TotalItems);
+
             return new PaginatedResult<EmployeeDto>
             {
                 Items = result.Items.Select(ToDto).ToList(),
@@ -130,7 +154,9 @@ namespace EmployeeManagement.Application.Services.Employees
 
         public async Task DeleteAsync(Guid id)
         {
-            _logger.LogInformation("Attempting to delete employee {Id}", id);
+            using var activity = Telemetry.ActivitySource.StartActivity("Delete Employee");
+
+            _logger.LogInformation("Attempting to delete employee {EmployeeId}", id);
 
             var employee = await _repository.GetByIdAsync(id)
                 ?? throw new NotFoundException($"Employee with ID {id} not found.");
@@ -138,7 +164,9 @@ namespace EmployeeManagement.Application.Services.Employees
             await _repository.DeleteAsync(employee);
             await _repository.SaveChangesAsync();
 
-            _logger.LogInformation("Employee {Id} deleted", id);
+            activity?.SetTag("employee.id", id.ToString());
+
+            _logger.LogInformation("Employee {EmployeeId} deleted successfully.", id);
         }
 
         #region Helpers
@@ -156,12 +184,21 @@ namespace EmployeeManagement.Application.Services.Employees
 
         private static async Task EnsureValidAsync<T>(IValidator<T> validator, T dto)
         {
+            using var span = Telemetry.ActivitySource.StartActivity("Ensure Valid DTO");
+
+            span?.SetTag("dto.type", typeof(T).Name);
+            span?.SetTag("dto.content", dto?.ToString());
+
             var result = await validator.ValidateAsync(dto);
+
             if (!result.IsValid)
+            {
+                span?.SetStatus(ActivityStatusCode.Error, "Validation failed");
+                span?.SetTag("validation.errors", string.Join(" | ", result.Errors.Select(e => e.ErrorMessage)));
                 throw new ValidationException(result.Errors);
+            }
         }
 
         #endregion
     }
-
 }

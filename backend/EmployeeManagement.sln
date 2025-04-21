@@ -3,23 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Api", "EmployeeManagement.Api\EmployeeManagement.Api.csproj", "{2F469C5A-CF35-42CF-B5B5-C0239515E8AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmployeeManagement.Api", "EmployeeManagement.Api\EmployeeManagement.Api.csproj", "{2F469C5A-CF35-42CF-B5B5-C0239515E8AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Application", "EmployeeManagement.Application\EmployeeManagement.Application.csproj", "{9690A2EF-302B-47E1-8BEA-4B4478B97133}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmployeeManagement.Application", "EmployeeManagement.Application\EmployeeManagement.Application.csproj", "{9690A2EF-302B-47E1-8BEA-4B4478B97133}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Domain", "EmployeeManagement.Domain\EmployeeManagement.Domain.csproj", "{673CAF2E-06F1-4129-A7E0-61FA16AE924D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmployeeManagement.Domain", "EmployeeManagement.Domain\EmployeeManagement.Domain.csproj", "{673CAF2E-06F1-4129-A7E0-61FA16AE924D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Infrastructure", "EmployeeManagement.Infrastructure\EmployeeManagement.Infrastructure.csproj", "{80DBA413-6A1A-4FD5-8297-6B04EFC1DDD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmployeeManagement.Infrastructure", "EmployeeManagement.Infrastructure\EmployeeManagement.Infrastructure.csproj", "{80DBA413-6A1A-4FD5-8297-6B04EFC1DDD7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Tests", "EmployeeManagement.Tests\EmployeeManagement.Tests.csproj", "{75DCE577-D8FD-4379-ACD9-3AC72D627189}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmployeeManagement.Tests", "EmployeeManagement.Tests\EmployeeManagement.Tests.csproj", "{75DCE577-D8FD-4379-ACD9-3AC72D627189}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeManagement.Shared", "EmployeeManagement.Shared\EmployeeManagement.Shared.csproj", "{13A8825B-ADBA-4FA1-88BE-DED1C4CEE6EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2F469C5A-CF35-42CF-B5B5-C0239515E8AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -42,5 +41,15 @@ Global
 		{75DCE577-D8FD-4379-ACD9-3AC72D627189}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75DCE577-D8FD-4379-ACD9-3AC72D627189}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75DCE577-D8FD-4379-ACD9-3AC72D627189}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13A8825B-ADBA-4FA1-88BE-DED1C4CEE6EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13A8825B-ADBA-4FA1-88BE-DED1C4CEE6EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13A8825B-ADBA-4FA1-88BE-DED1C4CEE6EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13A8825B-ADBA-4FA1-88BE-DED1C4CEE6EB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5F1C5371-452D-48CD-900C-4CD3749A8907}
 	EndGlobalSection
 EndGlobal

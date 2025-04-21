@@ -1,0 +1,68 @@
+{
+  "id": null,
+  "uid": "correlationid-lookup",
+  "title": "CorrelationId Lookup Dashboard",
+  "tags": ["correlationId", "observability", "logs", "traces"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 2,
+  "refresh": "10s",
+  "templating": {
+    "list": [
+      {
+        "name": "correlationId",
+        "type": "textbox",
+        "label": "Correlation ID",
+        "hide": 0,
+        "current": {
+          "text": "",
+          "value": ""
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "logs",
+      "title": "Logs (by CorrelationId)",
+      "id": 1,
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "targets": [
+        {
+          "expr": "{app=\"EmployeeManagementApi\"} |= \"${correlationId}\"",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "type": "trace",
+      "title": "Traces (filtering by CorrelationId)",
+      "id": 2,
+      "datasource": {
+        "type": "tempo",
+        "uid": "P214B5B846CF3925F"
+      },
+      "targets": [
+        {
+          "query": "{resource.service.name=\"EmployeeManagementApi\"} | span[\"correlationId\" = \"${correlationId}\"]",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      }
+    }
+  ]
+}

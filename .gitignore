@@ -31,5 +31,13 @@ frontend/dist/
 
 nginx/html/
 
+loki/storage/chunks/
+loki/storage/
+tempo/tempo-data/
+grafana/data/
+grafana/provisioning/dashboards/*.json.bak
+prometheus/data/
+
 *.tmp
 *.temp
+loki/storage/index

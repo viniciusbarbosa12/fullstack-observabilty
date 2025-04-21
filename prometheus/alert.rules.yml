@@ -1,0 +1,20 @@
+groups:
+  - name: employee_api_alerts
+    rules:
+      - alert: HighRate5xxErrors
+        expr: sum(rate(employeemanagementapi_metrics_api_requests_total{status=~"5.."}[1m])) > 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High rate of HTTP 5xx errors"
+          description: "The API is returning more than 1 HTTP 5xx error per second over the last minute."
+
+      - alert: HighAverageLatency
+        expr: (rate(employeemanagementapi_metrics_api_request_duration_ms_sum[1m]) / rate(employeemanagementapi_metrics_api_request_duration_ms_count[1m])) > 500
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High average request latency"
+          description: "The average request latency is greater than 500ms over the last minute."

@@ -1,0 +1,41 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "8.x"
+
+      - name: Restore & Build backend
+        run: |
+          cd backend
+          dotnet restore
+          dotnet build --no-restore --configuration Release
+
+      - name: Run tests
+        run: |
+          cd backend
+          dotnet test EmployeeManagement.Tests/EmployeeManagement.Tests.csproj --configuration Debug --verbosity normal
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install frontend dependencies & build
+        run: |
+          cd frontend
+          npm ci
+          npm run build
